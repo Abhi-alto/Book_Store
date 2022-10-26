@@ -13,7 +13,6 @@ namespace BuisnessLayer.Services
         {
             this.userRL = userRL;
         }
-
         public void Register(UserRegisterModel RegisterModel)
         {
             try
@@ -25,5 +24,39 @@ namespace BuisnessLayer.Services
                 throw ex;
             }
         }
+        public string LoginUser(LoginModel loginModel)
+        {
+            try
+            {
+                return this.userRL.LoginUser(loginModel);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public bool ForgetPassword(string email)
+        {
+                try
+                {
+                    return userRL.ForgetPassword(email);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+        }
+        public bool ResetPassword(string email, PasswordModel passwordModel)
+        {
+            try
+                {
+                    return userRL.ResetPassword(email, passwordModel);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+        }
     }
-}
+

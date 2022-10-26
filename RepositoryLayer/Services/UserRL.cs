@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Data;
+using Experimental.System.Messaging;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using CommonLayer.User;
@@ -29,14 +30,44 @@ namespace RepositoryLayer.Services
                 SqlCommand cmd = new SqlCommand("Register",sqlConnection);
                 cmd.CommandType = CommandType.StoredProcedure;
                 sqlConnection.Open();
-                cmd.Parameters.AddWithValue("@Name", userModel.Name);
-                cmd.Parameters.AddWithValue("@Email", userModel.Email);
-                cmd.Parameters.AddWithValue("@Password", userModel.Password);
-                cmd.Parameters.AddWithValue("@Phone_no", userModel.Phone_Num);
+                cmd.Parameters.AddWithValue("@name", userModel.Name);
+                cmd.Parameters.AddWithValue("@email", userModel.Email);
+                cmd.Parameters.AddWithValue("@password", userModel.Password);
+                cmd.Parameters.AddWithValue("@phone", userModel.Phone_Num);
                 cmd.ExecuteNonQuery();
                 sqlConnection.Close();
             }
             catch(Exception ex)
+            {
+                throw ex;
+            }
+        }   
+        public string LoginUser(LoginModel loginModel)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("Login", sqlConnection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                sqlConnection.Open();
+                cmd.Parameters.AddWithValue("@Email", loginModel.Email);
+                cmd.Parameters.AddWithValue("@Password", loginModel.Password);
+                /*SqlDataAdapter adapter = new SqlDataAdapter();
+                DataTable dt = new DataTable();*/
+                //adapter.Fill(dt);
+                SqlDataReader reader = cmd.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    reader.Close();
+                    // var id = Convert.ToInt32(reader.GetInt32(0));
+                    SqlCommand command = new SqlCommand("select Id from dbo.Users where email = @email", sqlConnection);
+                    command.Parameters.AddWithValue("@email", loginModel.Email);
+                    var Id = Convert.ToInt32(command.ExecuteScalar());
+                    sqlConnection.Close();
+                    return GenerateJwtToken(loginModel.Email,Id);
+                }
+                return null;
+            }
+            catch (Exception ex)
             {
                 throw ex;
             }
@@ -92,6 +123,113 @@ namespace RepositoryLayer.Services
                 };
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 return tokenHandler.WriteToken(token);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        private void msmqQueue_ReceiveCompleted(object sender, ReceiveCompletedEventArgs e)
+        {
+            try
+            {
+                MessageQueue queue = (MessageQueue)sender;
+                Message msg = queue.EndReceive(e.AsyncResult);
+                EmailService.SendEmail(e.Message.ToString(), GenerateToken(e.Message.ToString()));
+                queue.BeginReceive();
+
+            }
+            catch (MessageQueueException ex)
+
+            {
+
+                if (ex.MessageQueueErrorCode ==
+
+                MessageQueueErrorCode.AccessDenied)
+
+                {
+                    Console.WriteLine("Access is denied. " +
+                    "Queue might be a system queue.");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool ForgetPassword(String email)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("ForgotPassword", sqlConnection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                sqlConnection.Open();
+                cmd.Parameters.AddWithValue("@Email", email);
+                MessageQueue bookStore = new MessageQueue();
+                var val = cmd.ExecuteScalar();
+                if (val == null)
+                {
+                    return false;
+                }
+                SqlCommand comm = new SqlCommand("select Id from dbo.Users where email = @email", sqlConnection);
+                comm.Parameters.AddWithValue("@email", email);
+                var id = Convert.ToInt32(comm.ExecuteScalar());
+
+                //Setting the QueuPath where we want to store the messages.
+                bookStore.Path = @".\private$\FunDo_Notes";
+                if (MessageQueue.Exists(bookStore.Path))
+                {
+                    //Exists
+                    bookStore = new MessageQueue(@".\Private$\FunDo_Notes");
+                }
+                else
+                {
+                    // Creates the new queue named "Bills"
+                    MessageQueue.Create(bookStore.Path);
+                }
+                Message MyMessage = new Message();
+                MyMessage.Formatter = new BinaryMessageFormatter();
+                MyMessage.Body = GenerateJwtToken(email, id);
+                MyMessage.Label = "Forget Password Email";
+                bookStore.Send(MyMessage);
+                Message msg = bookStore.Receive();
+                msg.Formatter = new BinaryMessageFormatter();
+                EmailService.SendEmail(email, msg.Body.ToString());
+                bookStore.ReceiveCompleted += new ReceiveCompletedEventHandler(msmqQueue_ReceiveCompleted);
+
+                bookStore.BeginReceive();
+                bookStore.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public bool ResetPassword(string email, PasswordModel passwordModel)
+        {
+            try
+            {
+                SqlCommand cmd = new SqlCommand("ForgotPassword", sqlConnection);
+                cmd.CommandType = CommandType.StoredProcedure;
+                sqlConnection.Open();
+            
+                SqlCommand comm = new SqlCommand("select Id from dbo.Users where email = @email", sqlConnection);
+                cmd.Parameters.AddWithValue("@Email", email);
+                var id = comm.ExecuteScalar();
+                var newId = Convert.ToInt32(id);
+
+                cmd.Parameters.AddWithValue("@password", passwordModel.NewPassword);
+                //cmd.Parameters.AddWithValue("@userId", newId);
+                var val = cmd.ExecuteNonQuery();
+                if (passwordModel.NewPassword != passwordModel.CPassword)
+                {
+                    return false;
+                }
+                return true;
             }
             catch (Exception ex)
             {

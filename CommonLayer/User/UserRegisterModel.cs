@@ -16,6 +16,6 @@ namespace CommonLayer.User
         [Required]
         public string Password { get; set; }
         [Required]
-        public BigInteger Phone_Num { get; set; }
+        public long Phone_Num { get; set; }
     }
 }
