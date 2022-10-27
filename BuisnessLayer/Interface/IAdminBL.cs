@@ -1,12 +1,11 @@
 ﻿using CommonLayer.Admin;
-using CommonLayer.User;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RepositoryLayer.Interface
+namespace BuisnessLayer.Interface
 {
-    public interface IAdminRL
+    public interface IAdminBL
     {
         public string LoginAdmin(AdminModel adminModel);
     }
