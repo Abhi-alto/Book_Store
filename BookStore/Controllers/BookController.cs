@@ -5,16 +5,17 @@ using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System;
 using CommonLayer.BookModel;
+using System.Collections.Generic;
 
 namespace BookStore.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[Controller]")]
     public class BookController : ControllerBase
     {
         IBookBL bookBL;
         private IConfiguration _config;
-        public BookController(IBookBL bookBL, IConfiguration config,int bookID)
+        public BookController(IBookBL bookBL, IConfiguration config)
         {
             this.bookBL = bookBL;
             this._config = config;
@@ -52,7 +53,7 @@ namespace BookStore.Controllers
             }
         }
         [Authorize(Roles = Role.Admin)]
-        [HttpPut("DeleteBook/{bookID}")]
+        [HttpDelete("DeleteBook/{bookID}")]
         public IActionResult RemoveBook(int bookID)
         {
             try
@@ -63,6 +64,44 @@ namespace BookStore.Controllers
                     return this.BadRequest(new { success = false, status = 200, message = "Provide correct bookId" });
                 }
                 return this.Ok(new { success = true, status = 200, message = "Book deleted successfully" });
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        [Authorize]
+        [HttpGet("GetAllBook")]
+        public IActionResult GetAllBooks()
+        {
+            try
+            {
+               // List<GetAllBooksModel> booksList = new List<GetAllBooksModel>();
+               var booksList=this.bookBL.GetAllBooks();
+                if(booksList==null)
+                {
+                    return this.BadRequest(new { success = false, status = 200, message = "No books found" });
+                }
+                return this.Ok(new { success = true, status = 200,BooksList=booksList, message = "Books found successfully" });
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
+        }
+        [Authorize]
+        [HttpGet("GetBook")]
+        public IActionResult GetBook(int bookId)
+        {
+            try
+            {
+                
+                var book = this.bookBL.GetBook(bookId);
+                if (book == null)
+                {
+                    return this.BadRequest(new { success = false, status = 200, message = "No books found" });
+                }
+                return this.Ok(new { success = true, status = 200, Book = book, message = "Book found" });
             }
             catch (Exception ex)
             {
