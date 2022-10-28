@@ -122,24 +122,29 @@ namespace RepositoryLayer.Services
         {
             try
             {
-                SqlCommand cmd = new SqlCommand("GetAllBooks", sqlConnection);
+                SqlCommand cmd = new SqlCommand("GetBookById", sqlConnection);
                 cmd.CommandType = CommandType.StoredProcedure;
                 sqlConnection.Open();
                 cmd.Parameters.AddWithValue("@bookId", bookId);
                 SqlDataReader READ = cmd.ExecuteReader();
                 GetAllBooksModel getAllBooksModel = new GetAllBooksModel();
+                /*if(cmd.ExecuteNonQuery()==0)
+                {
+                    return null;
+                }*/
                 if (READ.HasRows)
                 {
+                    READ.Read();
                     getAllBooksModel.Id = READ.GetInt32(0);
                     getAllBooksModel.BookName = READ.GetString(1);
                     getAllBooksModel.BookDescription = READ.GetString(2);
                     getAllBooksModel.BookImg = READ.GetString(3);
                     getAllBooksModel.AuthorName = READ.GetString(4);
                     getAllBooksModel.Rating = READ.GetDecimal(5);
-                    getAllBooksModel.Rating_Count = READ.GetInt16(6);
+                    getAllBooksModel.Rating_Count = READ.GetInt32(6);
                     getAllBooksModel.ActualPrice = READ.GetInt32(7);
                     getAllBooksModel.DiscountedPrice = READ.GetInt32(8);
-                    getAllBooksModel.Quantity = READ.GetInt16(9);
+                    getAllBooksModel.Quantity = READ.GetInt32(9);
                 }
                 return getAllBooksModel;
             }
