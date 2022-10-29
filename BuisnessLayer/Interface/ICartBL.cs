@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace RepositoryLayer.Interface
+namespace BuisnessLayer.Interface
 {
-    public  interface ICartRL
+    public interface ICartBL
     {
         public void AddCart(CartModel cartModel);
-        public int UpdateCart(int CartId,UpdateCart updateCart);
+        public int UpdateCart(int CartId, UpdateCart updateCart);
         public bool DeleteCart(int CartId);
         public List<GetCart> GetCart();
     }

@@ -72,7 +72,7 @@ namespace BookStore.Controllers
         }
         [Authorize]
         [HttpGet("GetAllBook")]
-        public IActionResult GetAllBooks()
+        public IActionResult GetCart()
         {
             try
             {
