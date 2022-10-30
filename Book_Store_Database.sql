@@ -161,7 +161,7 @@ Create table Cart(
 			BookId int Foreign Key References Books(BookId) Not Null,
 			Id int Foreign Key References Users(Id) Not Null,
 			CartQuantity int );
-
+Select * from Cart
 drop table cart
 
 Create Procedure AddCart(
@@ -177,14 +177,14 @@ Create Procedure AddCart(
 Create Procedure UpdateCart(
 				@cartId int=0,
 				@bookId int=0,
-				@id int=0,
 				@cartQuantity int=0)
 	As
 	Begin
 	Update Cart
-			Set BookId=@bookId,Id=@id,CartQuantity=@cartQuantity
-			Where CartId = @cartId
+			Set CartQuantity=@cartQuantity
+			Where CartId = @cartId and BookId=@bookId
 	End
+drop procedure UpdateCart
 
 Create procedure DeleteCart
 			@cartId int =0
@@ -199,3 +199,59 @@ Create procedure GetCart
 		Begin
 				Select * from Cart 
 		End
+
+--WishList Table--
+Create table WishList
+			(
+			WishListId int Primary key Identity(1,1),		
+			Id int Foreign Key References Users(Id) Not Null,
+			BookId int Foreign Key References Books(BookId) Not Null,
+			)
+
+create procedure AddToWishList
+		@id int,
+		@bookId int
+		as 
+		begin 
+			insert into WishList(Id,BookId) 
+			values(@id,@bookId);
+		end
+
+Create procedure DeleteFromWishList
+			@wishListId int =0
+	As
+	Begin	
+				DELETE FROM WishList WHERE
+					WishListId=@wishListId ;			
+	 End
+
+Create procedure GetFromWishList
+		As
+		Begin
+				Select * from WishList
+		End
+
+-- Address--
+
+create table [AddressInfo](
+			AddressId int primary key identity,
+			City varchar(110) not null,
+			[State] varchar(110) not null,
+			[Address] varchar(500) not null,
+			typeId int not null Foreign key References AddressType(typeId),
+			Id int Foreign Key References Users(Id) Not Null,
+			)
+
+-- Order --
+
+create table [Order](
+		 OrderId int Primary key Identity(1,1),
+		OrderDate dateTime not null,
+		Cost money not null,
+		AddressId int not null Foreign key references dbo.AddressDetails(AddressId),
+		cartId int not null Foreign key references dbo.cart(cartId),
+		bookId int not null Foreign key references dbo.Book(bookId),
+		userId int not null Foreign key references dbo.userRegistration(userId),
+		)
+
+
