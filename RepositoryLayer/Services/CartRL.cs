@@ -44,14 +44,15 @@ namespace RepositoryLayer.Services
                 throw ex;
             }
         }
-        public int UpdateCart(int CartId, UpdateCart updateCart)
+        public int UpdateCart(int CartId,int BookId, UpdateCart updateCart)
         {
             try
             {
                 SqlCommand cmd = new SqlCommand("UpdateCart", sqlConnection);
                 cmd.CommandType = CommandType.StoredProcedure;
                 sqlConnection.Open();
-                cmd.Parameters.AddWithValue("@CartId", CartId);
+                cmd.Parameters.AddWithValue("@cartId", CartId);
+                cmd.Parameters.AddWithValue("@bookId", BookId);
                 cmd.Parameters.AddWithValue("@cartQuantity",updateCart.CartQuantity);
                 int rowsAffected = cmd.ExecuteNonQuery();
                 return rowsAffected;

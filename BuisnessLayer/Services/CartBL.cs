@@ -51,11 +51,11 @@ namespace BuisnessLayer.Services
             }
         }
 
-        public int UpdateCart(int CartId, UpdateCart updateCart)
+        public int UpdateCart(int CartId,int BookId, UpdateCart updateCart)
         {
             try
             {
-                return this.cartRL.UpdateCart(CartId, updateCart);
+                return this.cartRL.UpdateCart(CartId,BookId, updateCart);
             }
             catch (Exception ex)
             {

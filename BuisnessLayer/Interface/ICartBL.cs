@@ -8,7 +8,7 @@ namespace BuisnessLayer.Interface
     public interface ICartBL
     {
         public void AddCart(CartModel cartModel);
-        public int UpdateCart(int CartId, UpdateCart updateCart);
+        public int UpdateCart(int CartId,int BookId, UpdateCart updateCart);
         public bool DeleteCart(int CartId);
         public List<GetCart> GetCart();
     }

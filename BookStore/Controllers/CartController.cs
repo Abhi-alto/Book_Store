@@ -36,12 +36,12 @@ namespace BookStore.Controllers
             }
         }
         [Authorize(Roles = Role.User)]
-        [HttpPut("UpdateCart/{cartID}")]
-        public IActionResult UpdateCart(int cartID, UpdateCart updateCart)
+        [HttpPut("UpdateCart/{cartID}/{bookId}")]
+        public IActionResult UpdateCart(int cartID,int bookId, UpdateCart updateCart)
         {
             try
             {
-                int result = this.cartBL.UpdateCart(cartID, updateCart);
+                int result = this.cartBL.UpdateCart(cartID,bookId, updateCart);
                 if (result == 0)
                 {
                     return this.BadRequest(new { success = false, status = 200, message = "Provide correct cartId" });
