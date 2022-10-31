@@ -102,9 +102,9 @@ namespace RepositoryLayer.Services
                     {
                         GetCart cartModel = new GetCart();
                         cartModel.CartId = READ.GetInt32(0);
-                        cartModel.BookId = READ.GetInt32(0);
-                        cartModel.Id = READ.GetInt32(0);
-                        cartModel.CartQuantity = READ.GetInt32(0);
+                        cartModel.BookId = READ.GetInt32(1);
+                        cartModel.Id = READ.GetInt32(2);
+                        cartModel.CartQuantity = READ.GetInt32(3);
                         books.Add(cartModel);
                     }
                     return books;

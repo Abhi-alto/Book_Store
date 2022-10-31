@@ -231,27 +231,123 @@ Create procedure GetFromWishList
 				Select * from WishList
 		End
 
--- Address--
-
-create table [AddressInfo](
-			AddressId int primary key identity,
-			City varchar(110) not null,
-			[State] varchar(110) not null,
-			[Address] varchar(500) not null,
-			typeId int not null Foreign key References AddressType(typeId),
-			Id int Foreign Key References Users(Id) Not Null,
-			)
-
--- Order --
-
-create table [Order](
-		 OrderId int Primary key Identity(1,1),
-		OrderDate dateTime not null,
-		Cost money not null,
-		AddressId int not null Foreign key references dbo.AddressDetails(AddressId),
-		cartId int not null Foreign key references dbo.cart(cartId),
-		bookId int not null Foreign key references dbo.Book(bookId),
-		userId int not null Foreign key references dbo.userRegistration(userId),
-		)
 
 
+
+
+create table AddressInfo(
+AddressId int primary key identity,
+[Address] varchar(500) not null,
+City varchar(110) not null,
+[State] varchar(110) not null,
+typeId int not null Foreign key References AddressType(typeId),
+Id int Foreign Key References Users(Id) Not Null,
+)
+
+create table AddressType
+(typeId int primary key identity,
+AddressType varchar(60) not null )
+
+insert into AddressType(AddressType) values ('Home'),('Work'),('Others');
+select * from AddressType
+
+create proc AddAddress
+@Address varchar(600),
+@City varchar(50),
+@State varchar(50),
+@typeId int ,
+@userId int
+as 
+begin 
+insert into AddressInfo(Address,City,State,typeId,Id) values (@Address,@City,@State,@typeId,@userId)
+end
+
+create proc UpdateAddress
+@AddressId int,
+@Address varchar(max),
+@City varchar(110),
+@State varchar(110),
+@typeId int
+as 
+begin 
+update AddressInfo set Address=@Address,City=@City,State=@State,typeId=@typeId where AddressId = @AddressId
+end
+
+
+select * from AddressInfo
+select * from Admin
+select * from WishList
+
+create table [Order]
+	(OrderId int Primary key Identity,
+	OrderDate dateTime2 not null,
+	TotalPrice int not null,
+	AddressId int not null Foreign key references AddressInfo(AddressId),
+	CartId int not null Foreign key references Cart(CartId),
+	BookId int not null Foreign key references Books(BookId),
+	Id int Foreign Key References Users(Id) Not Null,
+)
+
+select * from dbo.[Order]
+
+create procedure TotalPriceCart
+@cartId int
+as 
+begin 
+select totalPrice=c.CartQuantity * b.DiscountedPrice from dbo.Cart c inner join dbo.Books b on c.BookId = b.BookId  where c.CartId = @cartId
+end
+
+exec TotalPriceCart 1
+
+create proc AddOrder
+	@orderDate dateTime2,
+	@totalPrice money,
+	@AddressId int ,
+	@cartId int,
+	@bookId int,
+	@id int
+	as
+	begin 
+		insert into  [Order](OrderDate,TotalPrice,AddressId,CartId,BookId,Id) values (@orderDate,@totalPrice,@AddressId,@cartId,@bookId,@id)
+end
+
+create table feedback(
+feedbackId int Primary key identity,
+Rating int not null,
+comment varchar(2000),
+bookId int not null Foreign key references dbo.Book(bookId),
+userId int not null Foreign key references dbo.userRegistration(userId)
+)
+
+create proc spAddFeedback
+@Rating int,
+@comment varchar(2000),
+@bookId int,
+@userId int
+as 
+begin 
+insert into dbo.feedback(Rating,comment,bookId,userId) values(@Rating,@comment,@bookId,@userId)
+end
+
+create proc spGetFeedback
+@bookId int
+as 
+begin 
+select * from dbo.feedback where bookId = @bookId 
+end
+
+create procedure GetOrder
+@userId int
+as 
+Begin
+select o.userId, o.orderId,o.orderDate,o.totalPrice,o.bookId,b.bookImg,b.bookName,
+b.bookDiscountedPrice,c.cartId,c.Quantity,a.AddressId,a.Address,a.City,a.State,a.typeId from dbo.[Order] o 
+inner join dbo.Book b on o.bookId = b.bookId 
+inner join dbo.cart c on o.cartId = c.cartId 
+inner join dbo.AddressInfo a on o.AddressId = a.AddressId where o.Id = @userId
+end
+exec spGetOrder 1
+
+drop proc spGetOrder
+
+select * from feedback
