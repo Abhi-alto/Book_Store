@@ -311,43 +311,32 @@ create proc AddOrder
 		insert into  [Order](OrderDate,TotalPrice,AddressId,CartId,BookId,Id) values (@orderDate,@totalPrice,@AddressId,@cartId,@bookId,@id)
 end
 
-create table feedback(
-feedbackId int Primary key identity,
-Rating int not null,
-comment varchar(2000),
-bookId int not null Foreign key references dbo.Book(bookId),
-userId int not null Foreign key references dbo.userRegistration(userId)
-)
+create table Feedback(
+					FeedbackId int Primary key identity,
+					Rating int not null,
+					Comment varchar(1500),
+					BookId int not null Foreign key references dbo.Books(BookId),
+					Id int not null Foreign key references Users(Id)
+					)
+drop table feedback
 
-create proc spAddFeedback
-@Rating int,
-@comment varchar(2000),
-@bookId int,
-@userId int
+create proc AddFeedback
+	@rating int,
+	@comment varchar(1500),
+	@bookId int,
+	@userId int
 as 
 begin 
-insert into dbo.feedback(Rating,comment,bookId,userId) values(@Rating,@comment,@bookId,@userId)
+	insert into Feedback(Rating,Comment,BookId,Id) values(@rating,@comment,@bookId,@userId)
 end
 
-create proc spGetFeedback
-@bookId int
-as 
-begin 
-select * from dbo.feedback where bookId = @bookId 
-end
+create proc GetFeedback
+			@bookId int
+			as 
+			begin 
+				select * from dbo.Feedback where BookId = @bookId 
+			end
 
-create procedure GetOrder
-@userId int
-as 
-Begin
-select o.userId, o.orderId,o.orderDate,o.totalPrice,o.bookId,b.bookImg,b.bookName,
-b.bookDiscountedPrice,c.cartId,c.Quantity,a.AddressId,a.Address,a.City,a.State,a.typeId from dbo.[Order] o 
-inner join dbo.Book b on o.bookId = b.bookId 
-inner join dbo.cart c on o.cartId = c.cartId 
-inner join dbo.AddressInfo a on o.AddressId = a.AddressId where o.Id = @userId
-end
-exec spGetOrder 1
 
-drop proc spGetOrder
 
 select * from feedback
